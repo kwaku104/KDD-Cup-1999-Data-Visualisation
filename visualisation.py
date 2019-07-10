@@ -5,9 +5,14 @@ from bokeh.models import ColumnDataSource
 from bokeh.models.tools import HoverTool
 from bokeh.palettes import Category20c
 from bokeh.palettes import Spectral5
+from bokeh.palettes import magma
 from bokeh.transform import factor_cmap
 from bokeh.transform import cumsum
 from math import pi
+from pathlib import Path
+
+mypath = Path().absolute()
+filepath = (mypath / "kddcup.data_10_percent.csv")
 
 output_file('attack_types.html')
 
@@ -23,7 +28,7 @@ col_names = ["duration","protocol_type","service","flag","src_bytes",
     "dst_host_srv_diff_host_rate","dst_host_serror_rate","dst_host_srv_serror_rate",
     "dst_host_rerror_rate","dst_host_srv_rerror_rate","label"]
 
-df = pd.read_csv('kddcup.data_10_percent.csv', header= None, names = col_names)
+df = pd.read_csv(filepath, header= None, names = col_names)
 # print(df.label == 'normal')
 # df.describe()
 # df.columns.to_list()
@@ -51,25 +56,3 @@ p = figure(x_range=label, y_range=(0, 290000), plot_height=700, plot_width= 1500
 # Render and show the vbar plot
 p.vbar(x='label', top='count', width=0.9, color='color', source=source)
 show(p)
-
-# Pie Chart
-#data = pd.Series(x).reset_index(name='value').rename(columns={'index':'country'})
-grouped['angle'] = grouped['count']/grouped['count'].sum() * 2*pi
-#grouped['color'] = Category20c[len(grouped)]
-
-p1 = figure(plot_height=350, title="Pie Chart", toolbar_location=None,
-           tools="hover", tooltips="@label: @count", x_range=(-0.5, 1.0))
-
-p1.wedge(x=0, y=1, radius=0.4,
-        start_angle=cumsum('angle', include_zero=True), end_angle=cumsum('angle'),
-        line_color="white", fill_color='color', legend='country', source = source)
-
-p1.axis.axis_label=None
-p1.axis.visible=False
-p1.grid.grid_line_color = None
-
-#grouped = df['label'].value_counts()
-
-# sample = df.sample(500)
-# source = ColumnDataSource(sample)
-show(p1)
