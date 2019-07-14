@@ -10,6 +10,7 @@ from bokeh.transform import factor_cmap
 from bokeh.transform import cumsum
 from math import pi
 from pathlib import Path
+from bokeh.layouts import column
 
 mypath = Path().absolute()
 filepath = (mypath / "kddcup.data_10_percent.csv")
@@ -50,10 +51,13 @@ for other in others:
 Sum = sum(other_column)
 len(other_column)
 
+# Dropping all rows with count values less than 3000
+grouped_other = grouped[grouped['count'] < 3000]
+
 # Dropping all rows with count values less than 9000
 grouped = grouped[grouped['count'] > 9000]
 
-# Adding 'other' row to grouoed dataframe for sum of values 'other_column'
+# Adding 'other' row to grouped dataframe for sum of values 'other_column'
 grouped = grouped.append({'label' : 'other', 'count' : Sum} ,  ignore_index = True)
 
 # x and y axes
@@ -69,4 +73,21 @@ p = figure(title = "Bar Chart of the class composition KDD99 Dataset", x_range=l
 
 # Render and show the vbar plot
 p.vbar(x='label', top='count', width=0.9, color='color', source=source)
-show(p)
+
+# x and y axes
+label_other = grouped_other['label'].tolist()
+count_other = grouped_other['count'].tolist()
+
+# Bokeh's mapping of column names and data lists
+source_other = ColumnDataSource(data=dict(label=label_other, count=count_other, color=Spectral5))
+
+# Bokeh's convenience function for creating a Figure object
+p_other = figure(title = "Bar Chart of the class composition of 'other' bar of KDD99 Dataset", x_range=label_other, y_range=(0, 2500), plot_height=500, plot_width= 1500,
+           toolbar_location=None, tools="")
+
+# Render and show the vbar plot
+p_other.vbar(x='label', top='count', width=0.9, color='color', source=source_other)
+
+column_layout = column(p, p_other)
+
+show(column_layout)
