@@ -29,18 +29,32 @@ col_names = ["duration","protocol_type","service","flag","src_bytes",
     "dst_host_rerror_rate","dst_host_srv_rerror_rate","label"]
 
 df = pd.read_csv(filepath, header= None, names = col_names)
-# print(df.label == 'normal')
-# df.describe()
-# df.columns.to_list()
 print(df['label'].value_counts())
 
-# """ back, land, teardrop, pod, imap, ftp_write, rootkit, buffer_overflow, guess_password, perl, loadmodule, phf,
-#     multihop, spy, warezclient, warezmaster """
-
+# Get counts of groups of 'labels' and fill in 'count' column
 grouped = DataFrame({'count': df.groupby(["label"]).size()}).reset_index()
 
-# Create new column to make plotting easier
-#df2['class-date'] = df2['class'] + "-" + df2['year_month_id'].map(str)
+ # creating a list of the count column
+others = list(grouped['count'])
+
+#     back, land, teardrop, pod, imap, ftp_write, rootkit, buffer_overflow, guess_password, perl, loadmodule, phf,
+#     multihop, spy, warezclient, warezmaster are labels with count values less than 9000
+
+# Appending all count values less than 9000 to a list
+other_column = []
+for other in others:
+    if other < 9000:
+        other_column.append(other)
+
+# Adding all values less than 9000
+Sum = sum(other_column)
+len(other_column)
+
+# Dropping all rows with count values less than 9000
+grouped = grouped[grouped['count'] > 9000]
+
+# Adding 'other' row to grouoed dataframe for sum of values 'other_column'
+grouped = grouped.append({'label' : 'other', 'count' : Sum} ,  ignore_index = True)
 
 # x and y axes
 label = grouped['label'].tolist()
@@ -50,7 +64,7 @@ count = grouped['count'].tolist()
 source = ColumnDataSource(data=dict(label=label, count=count, color=Spectral5))
 
 # Bokeh's convenience function for creating a Figure object
-p = figure(x_range=label, y_range=(0, 290000), plot_height=700, plot_width= 1500, title="Counts",
+p = figure(title = "Bar Chart of the class composition KDD99 Dataset", x_range=label, y_range=(0, 290000), plot_height=500, plot_width= 700,
            toolbar_location=None, tools="")
 
 # Render and show the vbar plot
